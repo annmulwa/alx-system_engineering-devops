@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# installing haproxy load balancer
+sudo apt-get -y update
+sudo apt-get -y install haproxy
+
+# configure haproxy to send traffic to web-01 and web-02
+server_config=\
+"
+frontend annmulwa_frontend
+        bind *:80
+        mode http
+        default_backend annmulwa_backend
+backend annmulwa_backend
+        balance roundrobin
+        server 517482-web-01 34.237.91.167:80 check
+        server 517482-web-02 100.25.137.209:80 check
+"
+echo "$server_config" | sudo tee -a /etc/haproxy/haproxy.cfg
+
+# enable haproxy to be managed by an init script
+echo "ENABLED=1" |sudo tee -a /etc/default/haproxy
+
+# test for errors in the configuration file
+sudo haproxy -c -f /etc/haproxy/haproxy.cfg
+
+# restart the nginx service
+sudo service haproxy restart
