@@ -1,22 +1,27 @@
-# Default server configuration
 server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
+    listen 80;
+    listen [::]:80 default_server;
+    add_header X-Served-By $hostname;
+    root   /etc/nginx/html;
+    index  index.html index.htm;
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+    root /var/www/html;
 
-        # Use IP of server as domain name
-        server_name_;
+    server_name _;
 
-        # Customize HTTP header response
-        add_header X-Served-By $hostname;
+    location /airbnb-onepage {
+        proxy_pass http://0.0.0.0:5000/airbnb-onepage;
+    }
 
-        # Serve the given route on Airbnb clone v3
-        location /airbnb-onepage/ {
-            proxy_pass http://0.0.0.0:5000/airbnb-onepage/;
-        }
+    location /hbnb_static {
+        alias /data/web_static/current/;
+    }
 
-        error_page 404 /404.html;
-        location /404 {
-           root /var/www/html;
-           internal;
-        }
+    location /{
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+        try_files $uri $uri/ =404;
+     }
 }
